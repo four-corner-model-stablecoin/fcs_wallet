@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'active_record'
+require_relative '../lib/initializer/active_record'
+
+ActiveRecord::Migration.create_table :utxos, if_not_exists: true do |t|
+  t.string :txid, index: true
+  t.integer :vout
+  t.string :token
+  t.integer :value
+  t.string :script_pubkey
+  t.string :out_point, index: { unique: true }
+
+  t.timestamps
+end
+
+ActiveRecord::Migration.create_table :infos, if_not_exists: true do |t|
+  t.string :key, index: { unique: true }
+  t.string :value
+
+  t.timestamps
+end

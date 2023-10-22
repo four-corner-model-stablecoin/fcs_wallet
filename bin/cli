@@ -1,0 +1,74 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'thor'
+require_relative '../lib/application'
+
+class CLI < Thor
+  desc "startwallet", "Start wallet as daemon."
+  def startwallet
+    return if wallet_running?
+    `bin/wallet -d`
+  end
+
+  desc "stopwallet", "Stop wallet daemon."
+  def stopwallet
+    `cat #{"#{__dir__}/../tmp/walletd.pid"} | xargs kill`
+  end
+
+  desc "statuswallet", "Show wallet status."
+  def statuswallet
+    pid = wallet_running?
+    puts "Status: #{pid ? "Running" : "Stopped"}"
+    puts "PID: #{pid}" if pid
+  end
+
+  desc "getbalance color_id", "Get current balance. If color_id specified show balance of token."
+  def getbalance(color_id = nil)
+    color_id = 'TPC' if color_id.nil?
+    balance = Utxo.where(token: color_id).sum(:value)
+
+    puts balance.to_s.reverse.gsub( /(\d{3})(?=\d)/, '\1,').reverse
+  end
+
+  desc "listunspent", "Show UTXO list"
+  def listunspent
+    pp Utxo.all.map(&:attributes)
+  end
+
+  desc "dumpprivkey", "Dump privake key."
+  def dumpprivkey
+    key = nil
+    File.open("credentials/jwk.json") do |f|
+      jwk_hash = JSON.load(f)
+      jwk = JSON::JWK.new(jwk_hash)
+      key = Tapyrus::Key.new(priv_key: jwk.to_key.private_key.to_s(16).downcase.encode('US-ASCII'), key_type: 0)
+    end
+
+    puts key.priv_key
+  end
+
+  desc "dumppubkey", "Dump public key."
+  def dumppubkey
+    key = nil
+    File.open("credentials/jwk.json") do |f|
+      jwk_hash = JSON.load(f)
+      jwk = JSON::JWK.new(jwk_hash)
+      key = Tapyrus::Key.new(priv_key: jwk.to_key.private_key.to_s(16).downcase.encode('US-ASCII'), key_type: 0)
+    end
+
+    puts key.pubkey
+  end
+
+  private
+
+  # @return pid|nil
+  def wallet_running?
+    pid = File.open("#{__dir__}/../tmp/walletd.pid", 'r') { |f| f.read }
+    return pid if Process.kill(0, pid.to_i)
+  rescue
+    nil
+  end
+end
+
+CLI.start(ARGV)

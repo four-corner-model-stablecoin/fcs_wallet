@@ -11,3 +11,4 @@ gem 'activerecord'
 gem 'debug'
 gem 'json-jwt'
 gem "dotenv"
+gem 'thor'

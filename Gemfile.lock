@@ -103,6 +103,7 @@ DEPENDENCIES
   json-jwt
   sqlite3
   tapyrus
+  thor
 
 RUBY VERSION
    ruby 3.2.2p53

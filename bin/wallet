@@ -5,7 +5,6 @@ Process.daemon if ARGV.include? "-d"
 
 require_relative '../lib/application'
 logger = Logger.new("#{__dir__}/../log/regtest.log", 'daily')
-logger.level = Logger::UNKNOWN
 
 # write pid
 File.open("#{__dir__}/../tmp/walletd.pid", 'w') { |f| f << Process.pid }

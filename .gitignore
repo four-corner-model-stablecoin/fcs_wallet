@@ -11,3 +11,5 @@
 
 /credentials/*
 !/credentials/.keep
+
+.env

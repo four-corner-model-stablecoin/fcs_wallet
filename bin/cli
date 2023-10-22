@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 require 'thor'
-require_relative '../lib/application'
+require_relative '../config/application'
 
 class CLI < Thor
   desc "startwallet", "Start wallet as daemon."

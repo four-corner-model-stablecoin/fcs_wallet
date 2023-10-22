@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 require 'active_record'
-require_relative '../lib/initializer/active_record'
+require_relative '../config/initializer/active_record'
 
 ActiveRecord::Migration.create_table :utxos, if_not_exists: true do |t|
   t.string :txid, index: true

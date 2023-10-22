@@ -3,7 +3,7 @@
 
 Process.daemon if ARGV.include? "-d"
 
-require_relative '../lib/application'
+require_relative '../config/application'
 logger = Logger.new("#{__dir__}/../log/regtest.log", 'daily')
 
 # write pid

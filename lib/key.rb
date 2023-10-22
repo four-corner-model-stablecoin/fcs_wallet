@@ -10,6 +10,6 @@ class Key
   private
 
   def self.load_from_json_file
-    File.open("#{__dir__}/../credentials/jwk.json") { |f| JSON.load(f) }
+    File.open("#{__dir__}/../config/credentials/jwk.json") { |f| JSON.load(f) }
   end
 end

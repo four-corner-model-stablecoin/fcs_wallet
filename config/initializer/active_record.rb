@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative '../model/utxo'
-require_relative '../model/info'
+require_relative '../../app/model/utxo'
+require_relative '../../app/model/info'
 
 # 環境によって分けたい
 ActiveRecord::Base.establish_connection(

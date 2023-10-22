@@ -12,4 +12,4 @@ Dotenv.load "#{__dir__}/../.env"
 
 require_relative './initializer/active_record'
 require_relative './initializer/tapyrus'
-require_relative './key'
+require_relative '../lib/key'

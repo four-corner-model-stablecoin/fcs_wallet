@@ -117,6 +117,55 @@ class CLI < Thor
     end
   end
 
+  desc "storevc <vc>", "Store VC."
+  def storevc(vc)
+    if File.exist?("#{__dir__}/../config/credentials/vc")
+      say "VC is already stored."
+      unless yes? "Overwrite? (y/N)"
+        say "Canceled."
+        exit(1)
+      end
+    end
+
+    File.open("#{__dir__}/../config/credentials/vc", 'w') { |f| f << vc }
+
+    say "config/credentials/vc saved."
+  end
+
+  desc "showvc", "Show VC."
+  def showvc
+    unless File.exist?("#{__dir__}/../config/credentials/vc")
+      say "VC does not exist."
+      exit(1)
+    end
+
+    vc = File.open("#{__dir__}/../config/credentials/vc", 'r') { |f| f.read }
+
+    say vc
+  end
+
+  desc "removevc", "Remove VC from the wallet."
+  def removevc
+    unless File.exist?("#{__dir__}/../config/credentials/vc")
+      say "VC does not exist."
+      exit(1)
+    end
+
+    vc = File.open("#{__dir__}/../config/credentials/vc", 'r') { |f| f.read }
+
+    say "Found: #{vc}"
+    text = "Do you really delete the VC information from the wallet? (y/N)"
+
+    if yes? text
+      File.delete("#{__dir__}/../config/credentials/vc")
+
+      say "config/credentials/vc removed."
+    else
+      say "Canceled."
+      exit(1)
+    end
+  end
+
   private
 
   # @return pid|nil

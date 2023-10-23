@@ -12,7 +12,7 @@ File.open("#{__dir__}/../tmp/walletd.pid", 'w') { |f| f << Process.pid }
 utxos = []
 utxos.concat(Utxo.all.map(&:attributes))
 
-key = Key.generate_from_jwk
+key = Key.from_jwk
 
 current_block_header = Info.find_or_create_by(key: 'current_block_header')
 current_block_count = current_block_header.value.to_i || 0

@@ -4,7 +4,6 @@
 
 ```bash
 cp .env.sample .env
-bin/setup
 ```
 
 and place your jwk.json to `config/credentials/jwk.json`

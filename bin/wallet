@@ -10,11 +10,11 @@ logger = Logger.new("#{__dir__}/../log/regtest.log", 'daily')
 File.open("#{__dir__}/../tmp/walletd.pid", 'w') { |f| f << Process.pid }
 
 utxos = []
-utxos.concat(UTXO.all.map(&:attributes))
+utxos.concat(FCSWallet::UTXO.all.map(&:attributes))
 
-key = Key.from_jwk
+key = FCSWallet::Key.from_jwk
 
-current_block_header = Info.find_or_create_by(key: 'current_block_header')
+current_block_header = FCSWallet::Info.find_or_create_by(key: 'current_block_header')
 current_block_count = current_block_header.value.to_i || 0
 
 loop do
@@ -63,7 +63,7 @@ loop do
   logger.info utxos
 
   utxos.each do |utxo|
-    UTXO.create(utxo).save
+    FCSWallet::UTXO.create(utxo).save
   end
 
   logger.info "Waiting next sync... (30 seconds after)"

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
-class Info < ActiveRecord::Base
-  validates :key, uniqueness: true
+module FCSWallet
+  class Info < ActiveRecord::Base
+    validates :key, uniqueness: true
+  end
 end

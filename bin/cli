@@ -29,7 +29,7 @@ class CLI < Thor
     end
   end
 
-  desc "getbalance color_id", "Get current balance. If color_id specified show balance of token."
+  desc "getbalance <color_id>", "Get current balance. If color_id specified show balance of token."
   def getbalance(color_id = nil)
     color_id = 'TPC' if color_id.nil?
     balance = Utxo.where(token: color_id).sum(:value)
@@ -81,7 +81,7 @@ class CLI < Thor
     say did.long
   end
 
-  desc "showdid", "Show DID."
+  desc "showdid", "Show DID stored in the wallet."
   def showdid
     unless File.exist?("#{__dir__}/../config/credentials/did")
       say "DID does not exist."
@@ -93,8 +93,8 @@ class CLI < Thor
     say long
   end
 
-  desc "resetdid", "Reset DID."
-  def resetdid
+  desc "removedid", "Remove DID from the wallet."
+  def removedid
     unless File.exist?("#{__dir__}/../config/credentials/did")
       say "DID does not exist."
       exit(1)

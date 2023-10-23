@@ -66,6 +66,57 @@ class CLI < Thor
     say key.pubkey
   end
 
+  desc "createdid", "Create DID."
+  def createdid
+    if File.exist?("#{__dir__}/../config/credentials/did")
+      say "DID is already set."
+      exit(1)
+    end
+
+    did = Did.generate
+
+    File.open("#{__dir__}/../config/credentials/did", 'w') { |f| f << did.long }
+    File.open("#{__dir__}/../config/credentials/jwk.json", 'w') { |f| f << did.jwk.to_json }
+
+    say did.long
+  end
+
+  desc "showdid", "Show DID."
+  def showdid
+    unless File.exist?("#{__dir__}/../config/credentials/did")
+      say "DID does not exist."
+      exit(1)
+    end
+
+    long = File.open("#{__dir__}/../config/credentials/did", 'r') { |f| f.read }
+
+    say long
+  end
+
+  desc "resetdid", "Reset DID."
+  def resetdid
+    unless File.exist?("#{__dir__}/../config/credentials/did")
+      say "DID does not exist."
+      exit(1)
+    end
+
+    long = File.open("#{__dir__}/../config/credentials/did", 'r') { |f| f.read }
+    did = Did.new(long:)
+
+    say "Found: #{did.long}"
+    text = "Do you really delete the DID information from the wallet?\nThe DID is never actually deleted, but the private key information on this wallet is lost. (y/N)"
+
+    if yes? text
+      File.delete("#{__dir__}/../config/credentials/did")
+      File.delete("#{__dir__}/../config/credentials/jwk.json")
+
+      say "config/credentials/did and config/credentials/jwk.json removed."
+    else
+      say "Canceled."
+      exit(1)
+    end
+  end
+
   private
 
   # @return pid|nil

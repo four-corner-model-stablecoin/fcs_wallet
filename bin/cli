@@ -36,7 +36,7 @@ class CLI < Thor
     pp Utxo.all.map(&:attributes)
   end
 
-  desc "dumpprivkey", "Dump privake key."
+  desc "dumpprivkey", "Dump private key."
   def dumpprivkey
     key = nil
     File.open("credentials/jwk.json") do |f|

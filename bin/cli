@@ -19,8 +19,14 @@ class CLI < Thor
   desc "statuswallet", "Show wallet status."
   def statuswallet
     pid = wallet_running?
-    puts "Status: #{pid ? "Running" : "Stopped"}"
-    puts "PID: #{pid}" if pid
+
+    print "Status: "
+    if pid
+      say "Running", [:green, :bold]
+      say "PID: #{pid}" if pid
+    else
+      say "Stopped", [:red, :bold]
+    end
   end
 
   desc "getbalance color_id", "Get current balance. If color_id specified show balance of token."
@@ -28,7 +34,7 @@ class CLI < Thor
     color_id = 'TPC' if color_id.nil?
     balance = Utxo.where(token: color_id).sum(:value)
 
-    puts balance.to_s.reverse.gsub( /(\d{3})(?=\d)/, '\1,').reverse
+    say balance.to_s.reverse.gsub( /(\d{3})(?=\d)/, '\1,').reverse
   end
 
   desc "listunspent", "Show UTXO list"
@@ -45,7 +51,7 @@ class CLI < Thor
       key = Tapyrus::Key.new(priv_key: jwk.to_key.private_key.to_s(16).downcase.encode('US-ASCII'), key_type: 0)
     end
 
-    puts key.priv_key
+    say key.priv_key
   end
 
   desc "dumppubkey", "Dump public key."
@@ -57,7 +63,7 @@ class CLI < Thor
       key = Tapyrus::Key.new(priv_key: jwk.to_key.private_key.to_s(16).downcase.encode('US-ASCII'), key_type: 0)
     end
 
-    puts key.pubkey
+    say key.pubkey
   end
 
   private

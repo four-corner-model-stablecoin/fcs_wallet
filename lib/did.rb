@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Did
+class DID
   attr_accessor :short
   attr_accessor :long
   attr_accessor :jwk

@@ -32,14 +32,14 @@ class CLI < Thor
   desc "getbalance <color_id>", "Get current balance. If color_id specified show balance of token."
   def getbalance(color_id = nil)
     color_id = 'TPC' if color_id.nil?
-    balance = Utxo.where(token: color_id).sum(:value)
+    balance = UTXO.where(token: color_id).sum(:value)
 
     say balance.to_s.reverse.gsub( /(\d{3})(?=\d)/, '\1,').reverse
   end
 
   desc "listunspent", "Show UTXO list"
   def listunspent
-    pp Utxo.all.map(&:attributes)
+    pp UTXO.all.map(&:attributes)
   end
 
   desc "dumpprivkey", "Dump private key."
@@ -73,7 +73,7 @@ class CLI < Thor
       exit(1)
     end
 
-    did = Did.generate
+    did = DID.generate
 
     File.open("#{__dir__}/../config/credentials/did", 'w') { |f| f << did.long }
     File.open("#{__dir__}/../config/credentials/jwk.json", 'w') { |f| f << did.jwk.to_json }
@@ -101,7 +101,7 @@ class CLI < Thor
     end
 
     long = File.open("#{__dir__}/../config/credentials/did", 'r') { |f| f.read }
-    did = Did.new(long:)
+    did = DID.new(long:)
 
     say "Found: #{did.long}"
     text = "Do you really delete the DID information from the wallet?\nThe DID is never actually deleted, but the private key information on this wallet is lost. (y/N)"

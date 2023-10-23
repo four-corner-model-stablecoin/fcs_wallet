@@ -10,7 +10,7 @@ logger = Logger.new("#{__dir__}/../log/regtest.log", 'daily')
 File.open("#{__dir__}/../tmp/walletd.pid", 'w') { |f| f << Process.pid }
 
 utxos = []
-utxos.concat(Utxo.all.map(&:attributes))
+utxos.concat(UTXO.all.map(&:attributes))
 
 key = Key.from_jwk
 
@@ -63,7 +63,7 @@ loop do
   logger.info utxos
 
   utxos.each do |utxo|
-    Utxo.create(utxo).save
+    UTXO.create(utxo).save
   end
 
   logger.info "Waiting next sync... (30 seconds after)"

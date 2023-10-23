@@ -7,7 +7,7 @@ require_relative '../config/application'
 class CLI < Thor
   desc "startwallet", "Start wallet as daemon."
   def startwallet
-    return if wallet_running?
+    return if FCSWallet::Util.wallet_running?
     `bin/wallet -d`
   end
 
@@ -18,7 +18,7 @@ class CLI < Thor
 
   desc "statuswallet", "Show wallet status."
   def statuswallet
-    pid = wallet_running?
+    pid = FCSWallet::Util.wallet_running?
 
     print "Status: "
     if pid
@@ -164,16 +164,6 @@ class CLI < Thor
       say "Canceled."
       exit(1)
     end
-  end
-
-  private
-
-  # @return pid|nil
-  def wallet_running?
-    pid = File.open("#{__dir__}/../tmp/walletd.pid", 'r') { |f| f.read }
-    return pid if Process.kill(0, pid.to_i)
-  rescue
-    nil
   end
 end
 

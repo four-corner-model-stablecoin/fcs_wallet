@@ -172,7 +172,6 @@ class CLI < Thor
   # MEMO: amount 指定できるようにしているがめんどいので UTXO.first を固定で送ります
   desc "sendtovc <issuer url> <vc> <amount>", "Send withdraw request to acquirer."
   def sendtovc(url, vc_jwt, amount)
-
     utxo = FCSWallet::UTXO.where.not(token: 'TPC').first
 
     # get user did
@@ -197,8 +196,6 @@ class CLI < Thor
 
     # send request to url with request_id
     request_id = SecureRandom.uuid
-
-    # send issuer to fill fee utxo
     response = Net::HTTP.post(
       URI(url + "/payment/create"),
       { request_id:, user_did: did, tx: tx.to_hex, vc: vc_jwt }.to_json,
@@ -220,6 +217,50 @@ class CLI < Thor
       'Content-Type' => 'application/json'
     )
 
+    body = JSON.parse(response.body)
+    txid = body['txid']
+
+    say "Completed. txid: #{txid}"
+  end
+
+  # MEMO: やってられんので UTXO.first を固定で送ります
+  desc "sendwithdrawrequest <acquirer url> <amount>", "Send withdraw request to acquirer."
+  def sendwithdrawrequest(url, amount)
+    utxo = FCSWallet::UTXO.where.not(token: 'TPC').first
+
+    # get merchant did
+    did = File.open("#{__dir__}/../config/credentials/did", 'r') { |f| f.read }
+
+    # get brand did from utxos
+    brand_pubkey = Tapyrus::Script.parse_from_payload(utxo.script_pubkey.htb).to_s.split(" ")[5]
+
+    # create transaction
+    key = FCSWallet::Key.from_jwk
+    tx = Tapyrus::Tx.new
+    tx.in << Tapyrus::TxIn.new(out_point: Tapyrus::OutPoint.from_txid(utxo.txid, utxo.vout))
+    tx.out << Tapyrus::TxOut.new(value: utxo.value, script_pubkey: Tapyrus::Script.to_cp2pkh(Tapyrus::Color::ColorIdentifier.parse_from_payload(utxo.token.htb), Tapyrus.hash160(brand_pubkey)))
+
+    # send request to url with request_id
+    request_id = SecureRandom.uuid
+    response = Net::HTTP.post(
+      URI(url + "/withdraw/create"),
+      { request_id:, merchant_did: did, tx: tx.to_hex }.to_json,
+      'Content-Type' => 'application/json'
+    )
+    body = JSON.parse(response.body)
+    tx = Tapyrus::Tx.parse_from_payload(body['tx'].htb)
+
+    # sign token input
+    sig_hash = tx.sighash_for_input(0, Tapyrus::Script.parse_from_payload(utxo.script_pubkey.htb))
+    signature = key.sign(sig_hash) + [Tapyrus::SIGHASH_TYPE[:all]].pack('C')
+    tx.in[0].script_sig << OP_0
+    tx.in[0].script_sig << signature
+
+    response = Net::HTTP.post(
+      URI(url + "/withdraw/confirm"),
+      { request_id:, merchant_did: did, tx: tx.to_hex, lock_script: utxo.script_pubkey }.to_json,
+      'Content-Type' => 'application/json'
+    )
     body = JSON.parse(response.body)
     txid = body['txid']
 

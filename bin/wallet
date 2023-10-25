@@ -15,8 +15,7 @@ logger = Logger.new("#{__dir__}/../log/regtest.log", 'daily')
 # write pid
 File.open("#{__dir__}/../tmp/walletd.pid", 'w') { |f| f << Process.pid }
 
-utxos = []
-utxos.concat(FCSWallet::UTXO.all.map(&:attributes))
+utxos = FCSWallet::UTXO.all
 
 key = FCSWallet::Key.from_jwk
 
@@ -27,10 +26,8 @@ loop do
   logger.info ""
   logger.info "Getting block count..."
   block_count = TAPYRUS_RPC_CLIENT.getblockcount
-
   while current_block_count < block_count do
     current_block_count += 1
-    current_block_header.update!(value: current_block_count)
 
     logger.info "Getting block info..."
     block_hash = TAPYRUS_RPC_CLIENT.getblockhash(current_block_count)
@@ -43,7 +40,8 @@ loop do
 
       # input に utxos の中身が使われていれば削除
       tx.inputs.each do |input|
-        utxos.delete(utxos.find { _1[:out_point] == input.out_point.to_payload.bth })
+        used = FCSWallet::UTXO.find_by(out_point: input.out_point.to_payload.bth)
+        FCSWallet::UTXO.destroy(used.id) if used
       end
 
       # key.pubkey が含まれる scriptPubKey を持つ UTXO を検索
@@ -52,26 +50,18 @@ loop do
         script_pubkey = output.script_pubkey
         if script_pubkey.to_s.include?(key.pubkey)
           color_id = script_pubkey.to_s.split(" ").first if script_pubkey.to_s.split(" ").second == "OP_COLOR"
-          utxos << {
-            txid:,
-            vout:,
-            token: color_id || 'TPC',
-            value: output.value,
-            script_pubkey: script_pubkey.to_payload.bth,
-            out_point: Tapyrus::OutPoint.from_txid(txid, vout).to_payload.bth
-          }
+          FCSWallet::UTXO.create(txid:,
+                      vout:,
+                      token: color_id || 'TPC',
+                      value: output.value,
+                      script_pubkey: script_pubkey.to_payload.bth,
+                      out_point: Tapyrus::OutPoint.from_txid(txid, vout).to_payload.bth)
         end
       end
     end
   end
 
-  logger.info "Current UTXOs: "
-  logger.info utxos
-
-  utxos.each do |utxo|
-    FCSWallet::UTXO.create(utxo).save
-  end
-
+  current_block_header.update!(value: block_count)
   logger.info "Waiting next sync... (30 seconds after)"
   sleep 30.seconds
 end

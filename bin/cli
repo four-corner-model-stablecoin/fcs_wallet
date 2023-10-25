@@ -31,8 +31,11 @@ class CLI < Thor
 
   desc "getbalance <color_id>", "Get current balance. If color_id specified show balance of token."
   def getbalance(color_id = nil)
-    color_id = 'TPC' if color_id.nil?
-    balance = FCSWallet::UTXO.where(token: color_id).sum(:value)
+    balance = if color_id.nil?
+                FCSWallet::UTXO.where.not(token: 'TPC').sum(:value)
+              else
+                FCSWallet::UTXO.where(token: color_id).sum(:value)
+              end
 
     say balance.to_s.reverse.gsub( /(\d{3})(?=\d)/, '\1,').reverse
   end
@@ -164,6 +167,63 @@ class CLI < Thor
       say "Canceled."
       exit(1)
     end
+  end
+
+  # MEMO: amount 指定できるようにしているがめんどいので UTXO.first を固定で送ります
+  desc "sendtovc <issuer url> <vc> <amount>", "Send withdraw request to acquirer."
+  def sendtovc(url, vc_jwt, amount)
+
+    utxo = FCSWallet::UTXO.where.not(token: 'TPC').first
+
+    # get user did
+    did = File.open("#{__dir__}/../config/credentials/did", 'r') { |f| f.read }
+
+    # get brand did from utxos
+    brand_pubkey = Tapyrus::Script.parse_from_payload(utxo.script_pubkey.htb).to_s.split(" ")[5]
+
+    # get merchant and acquirer did from vc
+    vc = FCSWallet::VC.new(vc_jwt)
+    verify_result = vc.verify
+
+    merchant_key = FCSWallet::Key.from_jwk(verify_result[:holder_pubkey_jwk])
+    acquirer_key = FCSWallet::Key.from_jwk(verify_result[:issuer_pubkey_jwk])
+    script_pubkey = Tapyrus::Script.new << utxo.token << OP_COLOR << 2 << [merchant_key.pubkey, acquirer_key.pubkey, brand_pubkey] << 3 << OP_CHECKMULTISIG
+
+    # create transaction
+    key = FCSWallet::Key.from_jwk
+    tx = Tapyrus::Tx.new
+    tx.in << Tapyrus::TxIn.new(out_point: Tapyrus::OutPoint.from_txid(utxo.txid, utxo.vout))
+    tx.out << Tapyrus::TxOut.new(value: utxo.value, script_pubkey:)
+
+    # send request to url with request_id
+    request_id = SecureRandom.uuid
+
+    # send issuer to fill fee utxo
+    response = Net::HTTP.post(
+      URI(url + "/payment/create"),
+      { request_id:, user_did: did, tx: tx.to_hex, vc: vc_jwt }.to_json,
+      'Content-Type' => 'application/json'
+    )
+
+    body = JSON.parse(response.body)
+    tx = Tapyrus::Tx.parse_from_payload(body['tx'].htb)
+
+    # sign token input
+    sig_hash = tx.sighash_for_input(0, Tapyrus::Script.parse_from_payload(utxo.script_pubkey.htb))
+    signature = key.sign(sig_hash) + [Tapyrus::SIGHASH_TYPE[:all]].pack('C')
+    tx.in[0].script_sig << OP_0
+    tx.in[0].script_sig << signature
+
+    response = Net::HTTP.post(
+      URI(url + "/payment/confirm"),
+      { request_id:, user_did: did, tx: tx.to_hex, vc: vc_jwt, lock_script: utxo.script_pubkey }.to_json,
+      'Content-Type' => 'application/json'
+    )
+
+    body = JSON.parse(response.body)
+    txid = body['txid']
+
+    say "Completed. txid: #{txid}"
   end
 end
 

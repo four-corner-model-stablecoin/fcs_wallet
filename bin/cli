@@ -262,9 +262,14 @@ class CLI < Thor
       'Content-Type' => 'application/json'
     )
     body = JSON.parse(response.body)
-    txid = body['txid']
+    merchant_to_brand_txid = body['merchant_to_brand_txid']
+    brand_to_issuer_txid = body['brand_to_issuer_txid']
+    burn_txid = body['burn_txid']
 
-    say "Completed. txid: #{txid}"
+    say "Completed."
+    say "  merchant_to_brand_txid: #{merchant_to_brand_txid}"
+    say "  brand_to_issuer_txid: #{brand_to_issuer_txid}"
+    say "  burn_txid: #{burn_txid}"
   end
 end
 

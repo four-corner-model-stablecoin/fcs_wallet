@@ -1,16 +1,20 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-Process.daemon if ARGV.include? "-d"
-
 require_relative '../config/application'
 
+logger = Logger.new(STDOUT)
+
 if FCSWallet::Util.wallet_running?
-  puts "walletd is already running."
+  logger.error "walletd is already running."
   exit(1)
 end
 
-logger = Logger.new("#{__dir__}/../log/regtest.log", 'daily')
+# daemonize
+if ARGV.include? "-d"
+  Process.daemon
+  logger = Logger.new("#{__dir__}/../log/regtest.log", 'daily')
+end
 
 # write pid
 File.open("#{__dir__}/../tmp/walletd.pid", 'w') { |f| f << Process.pid }

@@ -1,6 +1,6 @@
 # fcs_wallet
 
-## setup
+## Setup
 
 ```bash
 cp .env.sample .env
@@ -11,24 +11,22 @@ and place your jwk.json to `config/credentials/jwk.json`
 ## CLI
 
 ```bash
-# start wallet
-bin/cli startwallet
-
-# stop wallet
-bin/cli stopwallet
-
-# show wallet status
-bin/cli statuswallet
-
-# get token balance (if color_id not specified, show TPC balance)
-bin/cli getbalance <color_id>
-
-# show UTXO list
-bin/cli listunspent
-
-# dump private key
-bin/cli dumpprivkey
-
-# dump public key
-bin/cli dumppubkey
+$ bin/cli help
+Commands:
+  cli createdid                                    # Create DID.
+  cli dumpprivkey                                  # Dump private key.
+  cli dumppubkey                                   # Dump public key.
+  cli getbalance <color_id>                        # Get current balance. If color_id specified show balance of token.
+  cli help [COMMAND]                               # Describe available commands or one specific command
+  cli listunspent                                  # Show UTXO list
+  cli removedid                                    # Remove DID from the wallet.
+  cli removevc                                     # Remove VC from the wallet.
+  cli sendtovc <issuer url> <vc> <amount>          # Send withdraw request to acquirer.
+  cli sendwithdrawrequest <acquirer url> <amount>  # Send withdraw request to acquirer.
+  cli showdid                                      # Show DID stored in the wallet.
+  cli showvc                                       # Show VC.
+  cli startwallet                                  # Start wallet as daemon.
+  cli statuswallet                                 # Show wallet status.
+  cli stopwallet                                   # Stop wallet daemon.
+  cli storevc <vc>                                 # Store VC.
 ```

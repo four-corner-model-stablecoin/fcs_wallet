@@ -14,7 +14,7 @@ module FCSWallet
 
     def self.generate
       response = Net::HTTP.post(
-        URI("#{ENV['DID_SERVICE_SCHEMA']}://#{ENV['DID_SERVICE_HOST']}:#{ENV['DID_SERVICE_PORT']}/did/create"),
+        URI("#{ENV['DID_SERVICE_URL']}/did/create"),
         { "services": [] }.to_json,
         'Content-Type' => 'application/json'
       )

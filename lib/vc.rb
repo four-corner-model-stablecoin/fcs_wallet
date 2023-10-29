@@ -10,7 +10,7 @@ module FCSWallet
 
     def verify
       response = Net::HTTP.post(
-        URI("#{ENV['DID_SERVICE_SCHEMA']}://#{ENV['DID_SERVICE_HOST']}:#{ENV['DID_SERVICE_PORT']}/vc/verify"),
+        URI("#{ENV['DID_SERVICE_URL']}/vc/verify"),
         { "vcJwt": self.jwt }.to_json,
         'Content-Type' => 'application/json'
       )

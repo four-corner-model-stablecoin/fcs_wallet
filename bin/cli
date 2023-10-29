@@ -170,8 +170,8 @@ class CLI < Thor
   end
 
   # MEMO: amount 指定できるようにしているがめんどいので UTXO.first を固定で送ります
-  desc "sendtovc <issuer url> <vc> <amount>", "Send withdraw request to acquirer."
-  def sendtovc(url, vc_jwt, amount)
+  desc "sendtovc <vc> <amount>", "Send withdraw request to acquirer."
+  def sendtovc(vc_jwt, amount)
     utxo = FCSWallet::UTXO.where.not(token: 'TPC').first
 
     # get user did
@@ -197,7 +197,7 @@ class CLI < Thor
     # send request to url with request_id
     request_id = SecureRandom.uuid
     response = Net::HTTP.post(
-      URI(url + "/payment/create"),
+      URI("#{ENV['ISSUER_URL']}/payment/create"),
       { request_id:, user_did: did, tx: tx.to_hex, vc: vc_jwt }.to_json,
       'Content-Type' => 'application/json'
     )
@@ -212,7 +212,7 @@ class CLI < Thor
     tx.in[0].script_sig << signature
 
     response = Net::HTTP.post(
-      URI(url + "/payment/confirm"),
+      URI("#{ENV['ISSUER_URL']}/payment/confirm"),
       { request_id:, user_did: did, tx: tx.to_hex, vc: vc_jwt, lock_script: utxo.script_pubkey }.to_json,
       'Content-Type' => 'application/json'
     )
@@ -224,8 +224,8 @@ class CLI < Thor
   end
 
   # MEMO: やってられんので UTXO.first を固定で送ります
-  desc "sendwithdrawrequest <acquirer url> <amount>", "Send withdraw request to acquirer."
-  def sendwithdrawrequest(url, amount)
+  desc "sendwithdrawrequest <amount>", "Send withdraw request to acquirer."
+  def sendwithdrawrequest(amount)
     utxo = FCSWallet::UTXO.where.not(token: 'TPC').first
 
     # get merchant did
@@ -243,7 +243,7 @@ class CLI < Thor
     # send request to url with request_id
     request_id = SecureRandom.uuid
     response = Net::HTTP.post(
-      URI(url + "/withdraw/create"),
+      URI("#{ENV['ACQUIRER_URL']}/withdraw/create"),
       { request_id:, merchant_did: did, tx: tx.to_hex }.to_json,
       'Content-Type' => 'application/json'
     )
@@ -257,7 +257,7 @@ class CLI < Thor
     tx.in[0].script_sig << signature
 
     response = Net::HTTP.post(
-      URI(url + "/withdraw/confirm"),
+      URI("#{ENV['ACQUIRER_URL']}/withdraw/confirm"),
       { request_id:, merchant_did: did, tx: tx.to_hex, lock_script: utxo.script_pubkey }.to_json,
       'Content-Type' => 'application/json'
     )

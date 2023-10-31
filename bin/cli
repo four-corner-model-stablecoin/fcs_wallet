@@ -244,7 +244,7 @@ class CLI < Thor
     request_id = SecureRandom.uuid
     response = Net::HTTP.post(
       URI("#{ENV['ACQUIRER_URL']}/withdraw/create"),
-      { request_id:, merchant_did: did, tx: tx.to_hex }.to_json,
+      { request_id:, amount:, merchant_did: did, tx: tx.to_hex }.to_json,
       'Content-Type' => 'application/json'
     )
     body = JSON.parse(response.body)

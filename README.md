@@ -21,8 +21,8 @@ Commands:
   cli listunspent                                  # Show UTXO list
   cli removedid                                    # Remove DID from the wallet.
   cli removevc                                     # Remove VC from the wallet.
-  cli sendtovc <issuer url> <vc> <amount>          # Send withdraw request to acquirer.
-  cli sendwithdrawrequest <acquirer url> <amount>  # Send withdraw request to acquirer.
+  cli sendtovc <vc> <amount>                       # Send payment request to issuer.
+  cli sendwithdrawrequest <amount>                 # Send withdraw request to acquirer.
   cli showdid                                      # Show DID stored in the wallet.
   cli showvc                                       # Show VC.
   cli startwallet                                  # Start wallet as daemon.

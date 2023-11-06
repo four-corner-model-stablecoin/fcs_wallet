@@ -170,7 +170,7 @@ class CLI < Thor
   end
 
   # MEMO: amount 指定できるようにしているがめんどいので UTXO.first を固定で送ります
-  desc "sendtovc <vc> <amount>", "Send withdraw request to acquirer."
+  desc "sendtovc <vc> <amount>", "Send payment request to issuer."
   def sendtovc(vc_jwt, amount)
     utxo = FCSWallet::UTXO.where.not(token: 'TPC').first
 

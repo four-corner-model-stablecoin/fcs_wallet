@@ -1,7 +1,6 @@
 services:
   walletd:
     build: .
-    command: bash -c "bin/wallet -d && tail -f log/regtest.log"
     env_file:
       - .env
     depends_on:

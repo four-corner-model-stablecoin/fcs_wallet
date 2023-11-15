@@ -12,6 +12,7 @@ services:
     ports:
       - "12381:12381"
     volumes:
+      - ./config/tapyrus.conf:/etc/tapyrus/tapyrus.conf
       - tapyrus:/var/lib/tapyrus
 volumes:
   tapyrus:

@@ -69,5 +69,5 @@ loop do
 
   current_block_header.update!(value: block_count)
   logger.info "Waiting next sync... (30 seconds after)"
-  sleep 30.seconds
+  sleep 10.seconds
 end

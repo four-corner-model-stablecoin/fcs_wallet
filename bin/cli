@@ -220,7 +220,7 @@ class CLI < Thor
     body = JSON.parse(response.body)
     txid = body['txid']
 
-    if output_only_request_id
+    if output_only_request_id == "true"
       say request_id
     else
       say "Completed."
@@ -272,7 +272,7 @@ class CLI < Thor
     brand_to_issuer_txid = body['brand_to_issuer_txid']
     burn_txid = body['burn_txid']
 
-    if output_only_request_id
+    if output_only_request_id == "true"
       say request_id
     else
       say "Completed."

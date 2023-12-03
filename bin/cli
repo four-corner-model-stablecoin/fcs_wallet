@@ -170,8 +170,8 @@ class CLI < Thor
   end
 
   # MEMO: amount 指定できるようにしているがめんどいので UTXO.first を固定で送ります
-  desc "sendtovc <vc> <amount>", "Send payment request to issuer."
-  def sendtovc(vc_jwt, amount)
+  desc "sendtovc <vc> <amount> <output only request id>", "Send payment request to issuer."
+  def sendtovc(vc_jwt, amount, output_only_request_id)
     utxo = FCSWallet::UTXO.where.not(token: 'TPC').first
 
     # get user did
@@ -220,14 +220,18 @@ class CLI < Thor
     body = JSON.parse(response.body)
     txid = body['txid']
 
-    say "Completed."
-    say "  Request ID: #{request_id}"
-    say "  TXID: #{txid}"
+    if output_only_request_id
+      say request_id
+    else
+      say "Completed."
+      say "  Request ID: #{request_id}"
+      say "  TXID: #{txid}"
+    end
   end
 
   # MEMO: やってられんので UTXO.first を固定で送ります
-  desc "sendwithdrawrequest <amount>", "Send withdraw request to acquirer."
-  def sendwithdrawrequest(amount)
+  desc "sendwithdrawrequest <amount> <output only request id>", "Send withdraw request to acquirer."
+  def sendwithdrawrequest(amount, output_only_request_id)
     utxo = FCSWallet::UTXO.where.not(token: 'TPC').first
 
     # get merchant did
@@ -268,11 +272,15 @@ class CLI < Thor
     brand_to_issuer_txid = body['brand_to_issuer_txid']
     burn_txid = body['burn_txid']
 
-    say "Completed."
-    say "  Request ID: #{request_id}"
-    say "  merchant_to_brand_txid: #{merchant_to_brand_txid}"
-    say "  brand_to_issuer_txid: #{brand_to_issuer_txid}"
-    say "  burn_txid: #{burn_txid}"
+    if output_only_request_id
+      say request_id
+    else
+      say "Completed."
+      say "  Request ID: #{request_id}"
+      say "  merchant_to_brand_txid: #{merchant_to_brand_txid}"
+      say "  brand_to_issuer_txid: #{brand_to_issuer_txid}"
+      say "  burn_txid: #{burn_txid}"
+    end
   end
 end
 
